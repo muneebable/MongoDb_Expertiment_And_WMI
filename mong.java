@@ -46,7 +46,7 @@ public class mong {
 	public JsonObject authen() {
 		JsonObject myRestData = new JsonObject();
 		try{
-		      URL myUrl = new URL("http://tao-i134.tao.qanet/redfish/v1");
+		      URL myUrl = new URL("Any Url");
 		      URLConnection urlCon = myUrl.openConnection();
 		      urlCon.setRequestProperty("Method", "GET");
 		      urlCon.setRequestProperty("Accept", "application/json");
