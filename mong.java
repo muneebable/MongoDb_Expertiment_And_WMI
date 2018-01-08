@@ -6,7 +6,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mongodb.MongoClient;
+import com.mongodb.BasicDBObject;
+import com.mongodb.Block;
+import com.mongodb.DBCursor;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,18 +28,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import org.bson.Document;
+import static com.mongodb.client.model.Projections.*;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import com.mongodb.client.model.*;
 import com.mongodb.util.JSON;
-
+import static com.mongodb.client.model.Filters.eq;
 
 public class mong {
 	
 	
-	public static void connection() throws FileNotFoundException, IOException {
+	public static MongoCollection<Document> connection()/* throws FileNotFoundException, IOException */{
 		MongoClient client = new MongoClient("localhost", 27017);
 		String connectPoint = client.getConnectPoint();
 		System.out.println(connectPoint);
@@ -42,7 +49,9 @@ public class mong {
 		MongoCollection<Document> collection = db.getCollection("collection1");
 		System.out.println(db);
 		
-		String File = "file3.json";
+		
+		
+		/*String File = "file3.json";
 		BufferedReader reader = new BufferedReader(new FileReader(File));
 		try {
 			String json;
@@ -51,7 +60,8 @@ public class mong {
 		    } 
 		}finally {
 			reader.close();
-	}
+	}*/
+		return collection;
 		
 		/*int count =0;
 		int batch =100;
@@ -139,8 +149,45 @@ public class mong {
 			System.out.println("\nJSON Object: " + o);
 		}
 		
+	}
+	
+	public static void qopera(MongoCollection<Document> coll) {
+		BasicDBObject query = new BasicDBObject("Id", 
+                new BasicDBObject("$eq", "RootService"));
 		
-	}	
+		coll.find(query).forEach(new Block<Document>() {
+            @Override
+            public void apply(final Document document) {
+                System.out.println(document.toJson());
+            }
+        });    
+	}
+	
+	public static void query(MongoCollection<Document> coll) {
+		
+		try(MongoCursor<Document> cur = coll.find().iterator()){
+			while(cur.hasNext()) {
+				Document doc = cur.next();
+				List list = new ArrayList(doc.values());
+                System.out.print(list.get(1));
+                System.out.print(": ");
+                System.out.println(list.get(2));
+			}
+		}
+		System.out.println();
+	}
+	
+	public static void projection(MongoCollection<Document> coll) {
+		
+		FindIterable it = coll.find().projection(include("odataetag","Id"));
+		 ArrayList<Document> docs = new ArrayList();
+		 it.into(docs);
+		 for (Document doc : docs) {
+	            System.out.println(doc);
+	        }   
+	}
+	
+	
 	
 	public static void main(String[] args) throws JSONException, IOException {
 		 
@@ -149,6 +196,8 @@ public class mong {
 		 mon.writer(o);
 		 // mon.parser(o);
 		 connection();
+		 qopera(connection());
+		 projection(connection());
 		//System.out.println(o);
 		
 		
