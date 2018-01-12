@@ -29,18 +29,20 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import org.bson.Document;
 import static com.mongodb.client.model.Projections.*;
-import com.mongodb.DBCursor;
+//import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import com.mongodb.client.model.*;
 import com.mongodb.util.JSON;
-import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.*;
 
 public class mong {
 	
-	
+	/*
+	 * This method made a connection to MongoDB and get the collection which have the data stored in it.
+	 */
 	public static MongoCollection<Document> connection()/* throws FileNotFoundException, IOException */{
 		MongoClient client = new MongoClient("localhost", 27017);
 		String connectPoint = client.getConnectPoint();
@@ -93,12 +95,9 @@ public class mong {
 		System.out.println(UUID);
 	}*/
 	
-	
-	
-	public void SystemInfo(JSONObject o) {
-		
-	}
-	
+	/*
+	 * Credentials of the Server
+	 */
 	private String GetMyCredentials () {
 	    String rawUser = "admin";
 	    String rawPass = "admin";
@@ -107,6 +106,9 @@ public class mong {
 	    return "Basic "+myCred;
 	  }
 	
+	/*
+	 * Get the JSONObject from the server through REDFISH. 
+	 */
 	public JsonObject authen() {
 		JsonObject myRestData = new JsonObject();
 		try{
@@ -142,6 +144,9 @@ public class mong {
 		    }
 	}
 	
+	/*
+	 * Saving the Data in a file
+	 */
 	public void writer(JsonObject o) throws JSONException, IOException {
 		try (FileWriter file = new FileWriter("file1.json")) {
 			file.write(o.toString());
@@ -150,6 +155,10 @@ public class mong {
 		}
 		
 	}
+	
+	/*
+	 * Getting all the data from the collection
+	 */
 	
 	public static void qopera(MongoCollection<Document> coll) {
 		BasicDBObject query = new BasicDBObject("Id", 
@@ -174,9 +183,14 @@ public class mong {
                 System.out.println(list.get(2));
 			}
 		}
-		System.out.println();
+		System.out.println("get iit");
 	}
 	
+	/*
+	 This projection bring the specific data from the table.Here this projection is equal to
+	 	select id,odataetag from collection.
+	 	provide the ID, you will get the value.
+	 */
 	public static void projection(MongoCollection<Document> coll) {
 		
 		FindIterable it = coll.find().projection(include("odataetag","Id"));
@@ -187,6 +201,18 @@ public class mong {
 	        }   
 	}
 	
+	/*
+	 This function Modifies one of the field 
+	 */
+	
+	public static void modify(MongoCollection<Document> coll) {
+		//coll.deleteOne(eq());
+		coll.deleteOne(eq("RedfishCopyright","Copyright 2014-2017 Distributed Management Task Force, Inc (DMTF) For the full DMTF copyright policy, see http://wwwdmtforg/about/policies/copyright"));
+        coll.updateOne(new Document("RedfishCopyright", "Copyright 2014-2017 Distributed Management Task Force, Inc (DMTF) For the full DMTF copyright policy, see http://wwwdmtforg/about/policies/copyright"),  
+                new Document("$set", new Document("RedfishCopyright", "Copyright 2014-2017")));
+        
+        System.out.println("update Successfully");
+	}
 	
 	
 	public static void main(String[] args) throws JSONException, IOException {
@@ -194,10 +220,12 @@ public class mong {
 		 mong mon = new mong();
 		 JsonObject o = mon.authen();
 		 mon.writer(o);
-		 // mon.parser(o);
+		  //mon.parser(o);
 		 connection();
+		 //modify(connection());
 		 qopera(connection());
-		 projection(connection());
+		 //projection(connection());
+		 
 		//System.out.println(o);
 		
 		
