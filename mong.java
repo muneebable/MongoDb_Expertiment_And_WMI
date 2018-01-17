@@ -1,41 +1,25 @@
 package mongotest;
 
-
-
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mongodb.MongoClient;
-import com.mongodb.BasicDBObject;
-import com.mongodb.Block;
-import com.mongodb.DBCursor;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import java.util.ArrayList;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
 import java.io.BufferedReader;
 import org.apache.commons.codec.binary.*;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import org.bson.Document;
 import static com.mongodb.client.model.Projections.*;
-//import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import com.mongodb.client.model.*;
-import com.mongodb.util.JSON;
 import static com.mongodb.client.model.Filters.*;
 
 public class mong {
@@ -43,7 +27,8 @@ public class mong {
 	/*
 	 * This method made a connection to MongoDB and get the collection which have the data stored in it.
 	 */
-	public static MongoCollection<Document> connection()/* throws FileNotFoundException, IOException */{
+	public static MongoCollection<Document> connection() throws IOException {
+		@SuppressWarnings("resource")
 		MongoClient client = new MongoClient("localhost", 27017);
 		String connectPoint = client.getConnectPoint();
 		System.out.println(connectPoint);
@@ -51,9 +36,9 @@ public class mong {
 		MongoCollection<Document> collection = db.getCollection("collection1");
 		System.out.println(db);
 		
-		
-		
-		/*String File = "file3.json";
+		/* This chunk of code will help to read & parse the JSON file
+		 * 
+		String File = "file3.json";
 		BufferedReader reader = new BufferedReader(new FileReader(File));
 		try {
 			String json;
@@ -61,42 +46,12 @@ public class mong {
 		        collection.insertOne(Document.parse(json));
 		    } 
 		}finally {
-			reader.close();
-	}*/
+			reader.close();}*/
+		
 		return collection;
-		
-		/*int count =0;
-		int batch =100;
-	
-		List<InsertOneModel<Document>> docs = new ArrayList<>();
-		try(BufferedReader br = new BufferedReader (new FileReader("file1.json"))){
-			String line ;
-			while((line = br.readLine())!=null) {
-				docs.add(new InsertOneModel<>(Document.parse(line)));
-				count++;
-				if(count==batch) {
-					collection.bulkWrite(docs, new BulkWriteOptions().ordered(false));
-					docs.clear();
-					count=0;
-				}
-				
-			}
-					
-		
-	}
-		if(count>0) {
-			collection.bulkWrite(docs, new BulkWriteOptions().ordered(false));
-		}*/
 	}
 	
-	/*public void parser(JsonObject o) throws JSONException {
-		JsonElement UUID = o.get("UUID");
-		
-		System.out.println(UUID);
-	}*/
-	
-	/*
-	 * Credentials of the Server
+	 /* Credentials of the Server
 	 */
 	private String GetMyCredentials () {
 	    String rawUser = "admin";
@@ -155,57 +110,54 @@ public class mong {
 		}
 		
 	}
-	
 	/*
-	 * Getting all the data from the collection
+	 * Export() function will save all the documents in the collection to JSON File
 	 */
+
 	
-	public static void qopera(MongoCollection<Document> coll) {
-		BasicDBObject query = new BasicDBObject("Id", 
-                new BasicDBObject("$eq", "RootService"));
+	public static void Export(MongoCollection<Document> coll) throws IOException {
 		
-		coll.find(query).forEach(new Block<Document>() {
-            @Override
-            public void apply(final Document document) {
-                System.out.println(document.toJson());
-            }
-        });    
+		Runtime.getRuntime().exec("C:\\\\Program Files\\\\MongoDB\\\\Server\\\\3.6\\\\bin\\\\mongoexport.exe --host localhost --port 27017 --db test --collection collection1 --out file1.json");
 	}
 	
-	public static void query(MongoCollection<Document> coll) {
-		
-		try(MongoCursor<Document> cur = coll.find().iterator()){
-			while(cur.hasNext()) {
-				Document doc = cur.next();
-				List list = new ArrayList(doc.values());
-                System.out.print(list.get(1));
-                System.out.print(": ");
-                System.out.println(list.get(2));
-			}
+	/*
+	 *This function retreive all data from the Collection
+	 */
+	public static void RetreiveAllData(MongoCollection<Document> coll) {
+		MongoCursor<Document> cursor = coll.find().iterator();
+		try {
+		    while (cursor.hasNext()) {
+		        System.out.println(cursor.next().toJson());
+		    }
+		} finally {
+		    cursor.close();
 		}
-		System.out.println("get iit");
 	}
 	
 	/*
 	 This projection bring the specific data from the table.Here this projection is equal to
-	 	select id,odataetag from collection.
+	 	select Chassis from collection where ID = 10.172.8.37
 	 	provide the ID, you will get the value.
 	 */
-	public static void projection(MongoCollection<Document> coll) {
+	@SuppressWarnings("unchecked")
+	public static void FindByIP(MongoCollection<Document> coll) {
 		
-		FindIterable it = coll.find().projection(include("odataetag","Id"));
-		 ArrayList<Document> docs = new ArrayList();
+		
+		@SuppressWarnings("rawtypes")
+		FindIterable it = coll.find(eq("Id", "10.172.8.37")).projection(fields(include("Chassis"), excludeId()));
+		 @SuppressWarnings("rawtypes")
+		ArrayList<Document> docs = new ArrayList();
 		 it.into(docs);
 		 for (Document doc : docs) {
 	            System.out.println(doc);
-	        }   
+	        } 
 	}
 	
 	/*
 	 This function Modifies one of the field 
 	 */
 	
-	public static void modify(MongoCollection<Document> coll) {
+	public static void Update(MongoCollection<Document> coll) {
 		//coll.deleteOne(eq());
 		coll.deleteOne(eq("RedfishCopyright","Copyright 2014-2017 Distributed Management Task Force, Inc (DMTF) For the full DMTF copyright policy, see http://wwwdmtforg/about/policies/copyright"));
         coll.updateOne(new Document("RedfishCopyright", "Copyright 2014-2017 Distributed Management Task Force, Inc (DMTF) For the full DMTF copyright policy, see http://wwwdmtforg/about/policies/copyright"),  
@@ -220,15 +172,11 @@ public class mong {
 		 mong mon = new mong();
 		 JsonObject o = mon.authen();
 		 mon.writer(o);
-		  //mon.parser(o);
 		 connection();
-		 //modify(connection());
-		 qopera(connection());
-		 //projection(connection());
-		 
-		//System.out.println(o);
-		
-		
+		 RetreiveAllData(connection());
+		 Update(connection()); 
+		 Export(connection());
+		 FindByIP(connection());
 		
 	}
 }
