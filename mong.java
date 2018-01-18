@@ -36,9 +36,9 @@ public class mong {
 		MongoCollection<Document> collection = db.getCollection("collection1");
 		System.out.println(db);
 		
-		/* This chunk of code will help to read & parse the JSON file
+		/* This chunk of code will help to read & parse the JSON file and save it to Database
 		 * 
-		String File = "file3.json";
+		String File = "output.json";
 		BufferedReader reader = new BufferedReader(new FileReader(File));
 		try {
 			String json;
@@ -67,7 +67,7 @@ public class mong {
 	public JsonObject authen() {
 		JsonObject myRestData = new JsonObject();
 		try{
-		      URL myUrl = new URL("http://tao-i134.tao.qanet/redfish/v1");
+		      URL myUrl = new URL("http://tao-i134.tao.qanet/redfish/v1/Systems/0");
 		      URLConnection urlCon = myUrl.openConnection();
 		      urlCon.setRequestProperty("Method", "GET");
 		      urlCon.setRequestProperty("Accept", "application/json");
@@ -117,7 +117,7 @@ public class mong {
 	
 	public static void Export(MongoCollection<Document> coll) throws IOException {
 		
-		Runtime.getRuntime().exec("C:\\\\Program Files\\\\MongoDB\\\\Server\\\\3.6\\\\bin\\\\mongoexport.exe --host localhost --port 27017 --db test --collection collection1 --out file1.json");
+		Runtime.getRuntime().exec("C:\\\\Program Files\\\\MongoDB\\\\Server\\\\3.6\\\\bin\\\\mongoexport.exe --host localhost --port 27017 --db test --collection collection1 --out output.json");
 	}
 	
 	/*
@@ -140,11 +140,11 @@ public class mong {
 	 	provide the ID, you will get the value.
 	 */
 	@SuppressWarnings("unchecked")
-	public static void FindByIP(MongoCollection<Document> coll) {
+	public static void findByIP(MongoCollection<Document> coll) {
 		
 		
 		@SuppressWarnings("rawtypes")
-		FindIterable it = coll.find(eq("Id", "10.172.8.37")).projection(fields(include("Chassis"), excludeId()));
+		FindIterable it = coll.find(eq("Id", "10.172.8.37")).projection(fields(include("Chassis","Id","RedfishCopyright"), excludeId()));
 		 @SuppressWarnings("rawtypes")
 		ArrayList<Document> docs = new ArrayList();
 		 it.into(docs);
@@ -158,10 +158,9 @@ public class mong {
 	 */
 	
 	public static void Update(MongoCollection<Document> coll) {
-		//coll.deleteOne(eq());
-		coll.deleteOne(eq("RedfishCopyright","Copyright 2014-2017 Distributed Management Task Force, Inc (DMTF) For the full DMTF copyright policy, see http://wwwdmtforg/about/policies/copyright"));
-        coll.updateOne(new Document("RedfishCopyright", "Copyright 2014-2017 Distributed Management Task Force, Inc (DMTF) For the full DMTF copyright policy, see http://wwwdmtforg/about/policies/copyright"),  
-                new Document("$set", new Document("RedfishCopyright", "Copyright 2014-2017")));
+		coll.deleteOne(eq("RedfishCopyright","Copyright 2014-2017 "));
+        coll.updateOne(new Document("RedfishCopyright", "Muneeb "),  
+                new Document("$set", new Document("RedfishCopyright", "Muneeb")));
         
         System.out.println("update Successfully");
 	}
@@ -173,10 +172,11 @@ public class mong {
 		 JsonObject o = mon.authen();
 		 mon.writer(o);
 		 connection();
+		 //Update(connection()); 
 		 RetreiveAllData(connection());
-		 Update(connection()); 
+		
 		 Export(connection());
-		 FindByIP(connection());
+		 findByIP(connection());
 		
 	}
 }
