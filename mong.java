@@ -8,20 +8,34 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import java.util.ArrayList;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.io.BufferedReader;
+import java.io.FileReader;
+
 import org.apache.commons.codec.binary.*;
 import org.json.JSONException;
 import org.bson.Document;
 import static com.mongodb.client.model.Projections.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import static com.mongodb.client.model.Filters.*;
+import javax.net.ssl.X509TrustManager;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 public class mong {
 	
 	/*
@@ -36,8 +50,10 @@ public class mong {
 		MongoCollection<Document> collection = db.getCollection("collection1");
 		System.out.println(db);
 		
-		/* This chunk of code will help to read & parse the JSON file and save it to Database
-		 * 
+		// This chunk of code will help to read & parse the JSON file and save it to Database
+		/*final long NANOSEC_PER_SEC = 1000l*1000*1000;
+		long startTime = System.nanoTime();
+		while ((System.nanoTime()-startTime)< 5*60*NANOSEC_PER_SEC){
 		String File = "output.json";
 		BufferedReader reader = new BufferedReader(new FileReader(File));
 		try {
@@ -46,8 +62,8 @@ public class mong {
 		        collection.insertOne(Document.parse(json));
 		    } 
 		}finally {
-			reader.close();}*/
-		
+			reader.close();}
+		}*/
 		return collection;
 	}
 	
@@ -64,10 +80,36 @@ public class mong {
 	/*
 	 * Get the JSONObject from the server through REDFISH. 
 	 */
-	public JsonObject authen() {
+	public JsonObject authen() throws Exception {
 		JsonObject myRestData = new JsonObject();
+		
+		TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+            }
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+        }
+    };
+
+    // Install the all-trusting trust manager
+    SSLContext sc = SSLContext.getInstance("SSL");
+    sc.init(null, trustAllCerts, new java.security.SecureRandom());
+    HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+    // Create all-trusting host name verifier
+    HostnameVerifier allHostsValid = new HostnameVerifier() {
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    };
+
+    // Install the all-trusting host verifier
+    HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 		try{
-		      URL myUrl = new URL("http://tao-i134.tao.qanet/redfish/v1/Systems/0");
+		      URL myUrl = new URL("https://tao-i134.tao.qanet/redfish/v1/Systems/0");
 		      URLConnection urlCon = myUrl.openConnection();
 		      urlCon.setRequestProperty("Method", "GET");
 		      urlCon.setRequestProperty("Accept", "application/json");
@@ -141,16 +183,20 @@ public class mong {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void findByIP(MongoCollection<Document> coll) {
-		
-		
+		long start = System.nanoTime();
+		long count = 0;
 		@SuppressWarnings("rawtypes")
 		FindIterable it = coll.find(eq("Id", "10.172.8.37")).projection(fields(include("Chassis","Id","RedfishCopyright"), excludeId()));
-		 @SuppressWarnings("rawtypes")
+		long diff = System.nanoTime() - start;
+		System.out.println(diff);
+		@SuppressWarnings("rawtypes")
 		ArrayList<Document> docs = new ArrayList();
 		 it.into(docs);
 		 for (Document doc : docs) {
-	            System.out.println(doc);
+			 count++;
+	           // System.out.println(doc);
 	        } 
+		 System.out.println(count);
 	}
 	
 	/*
@@ -166,17 +212,21 @@ public class mong {
 	}
 	
 	
-	public static void main(String[] args) throws JSONException, IOException {
-		 
+	public static void main(String[] args) throws JSONException, IOException, Exception {
+			
+		
+		
 		 mong mon = new mong();
 		 JsonObject o = mon.authen();
 		 mon.writer(o);
 		 connection();
 		 //Update(connection()); 
-		 RetreiveAllData(connection());
+		// RetreiveAllData(connection());
 		
-		 Export(connection());
+		 //Export(connection());
 		 findByIP(connection());
+		 
+		 
 		
 	}
 }
