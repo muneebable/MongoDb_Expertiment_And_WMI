@@ -2,12 +2,16 @@ package mongotest;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.QueryBuilder;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -36,6 +40,10 @@ import javax.net.ssl.X509TrustManager;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 public class mong {
 	
 	/*
@@ -51,10 +59,11 @@ public class mong {
 		System.out.println(db);
 		
 		// This chunk of code will help to read & parse the JSON file and save it to Database
-		/*final long NANOSEC_PER_SEC = 1000l*1000*1000;
+		/*
+		final long NANOSEC_PER_SEC = 1000l*1000*1000;
 		long startTime = System.nanoTime();
-		while ((System.nanoTime()-startTime)< 5*60*NANOSEC_PER_SEC){
-		String File = "output.json";
+		while ((System.nanoTime()-startTime)< 1*60*NANOSEC_PER_SEC){
+		String File = "output1.json";
 		BufferedReader reader = new BufferedReader(new FileReader(File));
 		try {
 			String json;
@@ -182,19 +191,50 @@ public class mong {
 	 	provide the ID, you will get the value.
 	 */
 	@SuppressWarnings("unchecked")
-	public static void findByIP(MongoCollection<Document> coll) {
+	public static void findByIP(MongoCollection<Document> coll, String SearchByVar, String SearchValue) throws ParseException {
+		
+		//Instant  instant = Instant.parse("2018-01-19T14:45:54.031Z"); //Pass your date.
+		//Date timestamp = Date.from(instant);
+		
 		long start = System.nanoTime();
 		long count = 0;
 		@SuppressWarnings("rawtypes")
-		FindIterable it = coll.find(eq("Id", "10.172.8.37")).projection(fields(include("Chassis","Id","RedfishCopyright"), excludeId()));
+		FindIterable it = coll.find(eq(SearchByVar, SearchValue)).projection(fields(include("BiosVersion","HostName","Manufacturer","Model","SerialNumber","PartNumber","RedfishCopyright"), excludeId()));
+		//FindIterable it = coll.find(filter).projection(fields(include("SerialNumber","PartNumber","RedfishCopyright"), excludeId()));
 		long diff = System.nanoTime() - start;
 		System.out.println(diff);
+		
+		
 		@SuppressWarnings("rawtypes")
 		ArrayList<Document> docs = new ArrayList();
 		 it.into(docs);
 		 for (Document doc : docs) {
 			 count++;
-	           // System.out.println(doc);
+	            System.out.println(doc);
+	        } 
+		 System.out.println(count);
+	}
+	
+public static void findByIP(MongoCollection<Document> coll, String SearchByVar, Date Date) throws ParseException {
+		
+		//Instant  instant = Instant.parse("2018-01-19T14:45:54.031Z"); //Pass your date.
+		//Date timestamp = Date.from(instant);
+		
+		long start = System.nanoTime();
+		long count = 0;
+		@SuppressWarnings("rawtypes")
+		FindIterable it = coll.find(eq(SearchByVar, Date)).projection(fields(include("BiosVersion","HostName","Manufacturer","Model","SerialNumber","PartNumber","RedfishCopyright"), excludeId()));
+		//FindIterable it = coll.find(filter).projection(fields(include("SerialNumber","PartNumber","RedfishCopyright"), excludeId()));
+		long diff = System.nanoTime() - start;
+		System.out.println(diff);
+		
+		
+		@SuppressWarnings("rawtypes")
+		ArrayList<Document> docs = new ArrayList();
+		 it.into(docs);
+		 for (Document doc : docs) {
+			 count++;
+	            System.out.println(doc);
 	        } 
 		 System.out.println(count);
 	}
@@ -224,7 +264,7 @@ public class mong {
 		// RetreiveAllData(connection());
 		
 		 //Export(connection());
-		 findByIP(connection());
+		// findByIP(connection());
 		 
 		 
 		
