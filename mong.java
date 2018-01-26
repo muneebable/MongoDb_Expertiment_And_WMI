@@ -49,7 +49,7 @@ public class mong {
 	/*
 	 * This method made a connection to MongoDB and get the collection which have the data stored in it.
 	 */
-	public static MongoCollection<Document> connection() throws IOException {
+	public static MongoCollection<Document> connection() throws IOException /*throws IOException*/ {
 		@SuppressWarnings("resource")
 		MongoClient client = new MongoClient("localhost", 27017);
 		String connectPoint = client.getConnectPoint();
@@ -59,11 +59,11 @@ public class mong {
 		System.out.println(db);
 		
 		// This chunk of code will help to read & parse the JSON file and save it to Database
-		/*
-		final long NANOSEC_PER_SEC = 1000l*1000*1000;
-		long startTime = System.nanoTime();
-		while ((System.nanoTime()-startTime)< 1*60*NANOSEC_PER_SEC){
-		String File = "output1.json";
+		
+	//	final long NANOSEC_PER_SEC = 1000l*1000*1000;
+		//long startTime = System.nanoTime();
+	//	while ((System.nanoTime()-startTime)< 1*60*NANOSEC_PER_SEC){
+		/*String File = "output1.json";
 		BufferedReader reader = new BufferedReader(new FileReader(File));
 		try {
 			String json;
@@ -72,10 +72,11 @@ public class mong {
 		    } 
 		}finally {
 			reader.close();}
-		}*/
+		
+		
+	//}*/
 		return collection;
 	}
-	
 	 /* Credentials of the Server
 	 */
 	private String GetMyCredentials () {
@@ -191,54 +192,107 @@ public class mong {
 	 	provide the ID, you will get the value.
 	 */
 	@SuppressWarnings("unchecked")
-	public static void findByIP(MongoCollection<Document> coll, String SearchByVar, String SearchValue) throws ParseException {
+	public static void findByIP(MongoCollection<Document> coll,String SearchVar,String val, String SearchVal1,String SearchVal2, String SearchVal3, String SearchVal4) throws ParseException {
 		
-		//Instant  instant = Instant.parse("2018-01-19T14:45:54.031Z"); //Pass your date.
-		//Date timestamp = Date.from(instant);
+		/*Instant  instant = Instant.parse("2018-01-19T14:45:54.031Z"); //Pass your date.
+		Date timestamp = Date.from(instant);
+		ArrayList<Document> docs = new ArrayList();
+		FindIterable it;
+		String[] SeachValArray = SearchVal.split(",");
+		for(int i = 0; i < SeachValArray.length; i++) {
+			 it = coll.find(eq(SearchVar, val)).projection(fields(include(SeachValArray[i]), excludeId()));
+			 it.into(docs);
+		}
+		
+		long count = 0;*/
 		
 		long start = System.nanoTime();
+		
 		long count = 0;
 		@SuppressWarnings("rawtypes")
-		FindIterable it = coll.find(eq(SearchByVar, SearchValue)).projection(fields(include("BiosVersion","HostName","Manufacturer","Model","SerialNumber","PartNumber","RedfishCopyright"), excludeId()));
+		FindIterable it = coll.find(eq(SearchVar, val)).projection(fields(include(SearchVal1,SearchVal2,SearchVal3,SearchVal4), excludeId()));
 		//FindIterable it = coll.find(filter).projection(fields(include("SerialNumber","PartNumber","RedfishCopyright"), excludeId()));
 		long diff = System.nanoTime() - start;
 		System.out.println(diff);
 		
-		
-		@SuppressWarnings("rawtypes")
 		ArrayList<Document> docs = new ArrayList();
-		 it.into(docs);
+		it.into(docs);
 		 for (Document doc : docs) {
 			 count++;
-	            System.out.println(doc);
+	           System.out.println(doc);
 	        } 
 		 System.out.println(count);
 	}
 	
-public static void findByIP(MongoCollection<Document> coll, String SearchByVar, Date Date) throws ParseException {
+	/*
+	 * Overload Method to pass date to the function.
+	 * */
+	
+public static void findByIP(MongoCollection<Document> coll,String SearchVar,Date val, String SearchVal1,String SearchVal2, String SearchVal3, String SearchVal4) throws ParseException {
 		
-		//Instant  instant = Instant.parse("2018-01-19T14:45:54.031Z"); //Pass your date.
-		//Date timestamp = Date.from(instant);
+		
+		/*ArrayList<Document> docs = new ArrayList();
+		FindIterable it;
+		String[] SeachValArray = SearchVal.split(",");
+		for(int i = 0; i < SeachValArray.length; i++) {
+			 it = coll.find(eq(SearchVar, val)).projection(fields(include(SeachValArray[i]), excludeId()));
+			 it.into(docs);
+		}
+		
+		long count = 0*/;
 		
 		long start = System.nanoTime();
+		
 		long count = 0;
 		@SuppressWarnings("rawtypes")
-		FindIterable it = coll.find(eq(SearchByVar, Date)).projection(fields(include("BiosVersion","HostName","Manufacturer","Model","SerialNumber","PartNumber","RedfishCopyright"), excludeId()));
+		FindIterable it = coll.find(eq(SearchVar, val)).projection(fields(include(SearchVal1,SearchVal2,SearchVal3,SearchVal4), excludeId()));
 		//FindIterable it = coll.find(filter).projection(fields(include("SerialNumber","PartNumber","RedfishCopyright"), excludeId()));
 		long diff = System.nanoTime() - start;
 		System.out.println(diff);
 		
-		
-		@SuppressWarnings("rawtypes")
 		ArrayList<Document> docs = new ArrayList();
-		 it.into(docs);
+		it.into(docs);
 		 for (Document doc : docs) {
 			 count++;
-	            System.out.println(doc);
+	           System.out.println(doc);
 	        } 
 		 System.out.println(count);
 	}
+/*
+ * Overload Method to get all the data.
+ * */
+
+public static void findByIP(MongoCollection<Document> coll,String SearchVar,String val) throws ParseException {
 	
+	
+	/*ArrayList<Document> docs = new ArrayList();
+	FindIterable it;
+	String[] SeachValArray = SearchVal.split(",");
+	for(int i = 0; i < SeachValArray.length; i++) {
+		 it = coll.find(eq(SearchVar, val)).projection(fields(include(SeachValArray[i]), excludeId()));
+		 it.into(docs);
+	}
+	
+	long count = 0*/;
+	
+	long start = System.nanoTime();
+	
+	long count = 0;
+	@SuppressWarnings("rawtypes")
+	FindIterable it = coll.find(eq(SearchVar, val)).projection(fields(excludeId()));
+	//FindIterable it = coll.find(filter).projection(fields(include("SerialNumber","PartNumber","RedfishCopyright"), excludeId()));
+	long diff = System.nanoTime() - start;
+	System.out.println(diff);
+	
+	ArrayList<Document> docs = new ArrayList();
+	it.into(docs);
+	 for (Document doc : docs) {
+		 count++;
+           System.out.println(doc);
+        } 
+	 System.out.println(count);
+}
+
 	/*
 	 This function Modifies one of the field 
 	 */
@@ -264,7 +318,7 @@ public static void findByIP(MongoCollection<Document> coll, String SearchByVar, 
 		// RetreiveAllData(connection());
 		
 		 //Export(connection());
-		// findByIP(connection());
+		findByIP(connection(),"HostName","TAO-P034","BiosVersion","Description","Manufacturer","Model");
 		 
 		 
 		
