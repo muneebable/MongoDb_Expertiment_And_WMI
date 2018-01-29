@@ -2,10 +2,9 @@ package mongotest;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+
 import com.mongodb.MongoClient;
-import com.mongodb.QueryBuilder;
+
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -24,7 +23,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.io.BufferedReader;
-import java.io.FileReader;
+
 
 import org.apache.commons.codec.binary.*;
 import org.json.JSONException;
@@ -32,23 +31,24 @@ import org.bson.Document;
 import static com.mongodb.client.model.Projections.*;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
+
 import java.net.MalformedURLException;
 import static com.mongodb.client.model.Filters.*;
 import javax.net.ssl.X509TrustManager;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
+
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.ZonedDateTime;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class mong {
 	
 	/*
 	 * This method made a connection to MongoDB and get the collection which have the data stored in it.
 	 */
+	
+	static Logger logger = Logger.getLogger("myLogger");
 	public static MongoCollection<Document> connection() throws IOException /*throws IOException*/ {
 		@SuppressWarnings("resource")
 		MongoClient client = new MongoClient("localhost", 27017);
@@ -119,6 +119,7 @@ public class mong {
     // Install the all-trusting host verifier
     HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 		try{
+			logger.log(Level.INFO, "Tring to connect server REDFISH interface");
 		      URL myUrl = new URL("https://tao-i134.tao.qanet/redfish/v1/Systems/0");
 		      URLConnection urlCon = myUrl.openConnection();
 		      urlCon.setRequestProperty("Method", "GET");
@@ -178,10 +179,12 @@ public class mong {
 	public static void RetreiveAllData(MongoCollection<Document> coll) {
 		MongoCursor<Document> cursor = coll.find().iterator();
 		try {
+			logger.info("Trying to retreive data from Database");
 		    while (cursor.hasNext()) {
 		        System.out.println(cursor.next().toJson());
 		    }
 		} finally {
+			logger.log(Level.INFO,"Closing the cursor after getting the data");
 		    cursor.close();
 		}
 	}
@@ -215,6 +218,7 @@ public class mong {
 		long diff = System.nanoTime() - start;
 		System.out.println(diff);
 		
+		@SuppressWarnings("rawtypes")
 		ArrayList<Document> docs = new ArrayList();
 		it.into(docs);
 		 for (Document doc : docs) {
@@ -228,6 +232,7 @@ public class mong {
 	 * Overload Method to pass date to the function.
 	 * */
 	
+@SuppressWarnings("unchecked")
 public static void findByIP(MongoCollection<Document> coll,String SearchVar,Date val, String SearchVal1,String SearchVal2, String SearchVal3, String SearchVal4) throws ParseException {
 		
 		
@@ -250,6 +255,7 @@ public static void findByIP(MongoCollection<Document> coll,String SearchVar,Date
 		long diff = System.nanoTime() - start;
 		System.out.println(diff);
 		
+		@SuppressWarnings({ "rawtypes" })
 		ArrayList<Document> docs = new ArrayList();
 		it.into(docs);
 		 for (Document doc : docs) {
@@ -262,6 +268,7 @@ public static void findByIP(MongoCollection<Document> coll,String SearchVar,Date
  * Overload Method to get all the data.
  * */
 
+@SuppressWarnings("unchecked")
 public static void findByIP(MongoCollection<Document> coll,String SearchVar,String val) throws ParseException {
 	
 	
@@ -284,6 +291,7 @@ public static void findByIP(MongoCollection<Document> coll,String SearchVar,Stri
 	long diff = System.nanoTime() - start;
 	System.out.println(diff);
 	
+	@SuppressWarnings("rawtypes")
 	ArrayList<Document> docs = new ArrayList();
 	it.into(docs);
 	 for (Document doc : docs) {
